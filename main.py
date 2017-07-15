@@ -2,7 +2,7 @@ import datetime
 
 from flask import Flask, jsonify, render_template, request
 
-from . import stock
+from Plutus import stock
 
 app = Flask(__name__)
 
