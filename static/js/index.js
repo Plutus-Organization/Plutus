@@ -1,4 +1,4 @@
-val heroku_app_url = 'plutus-backend.herokuapp.com/';
+const heroku_app_url = 'plutus-backend.herokuapp.com/';
 
 function get_article_for_name(name) {
   var requestUrl = heroku_app_url + 'get_article_from_name?name=' + name;
