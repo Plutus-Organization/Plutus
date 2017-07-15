@@ -4,13 +4,14 @@
     <title>Plutus</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
   </head>
 
   <body>
     <h2>Search News Summary!</h2>
     <p>Enter ticker here:</p>
     <input id="news" type="text">
-    <button id="submit_news">Submit</button>
+    <button id="submit_news" onclick="get_article_for_name()">Submit</button>
     <div id="news_result"></div>
     <div id="news_url"></div>
 

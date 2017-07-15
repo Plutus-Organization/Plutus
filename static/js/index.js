@@ -1,7 +1,10 @@
 
 
-function get_article_for_name(name) {
-  var requestUrl = 'https://plutus-backend.herokuapp.com/get_article_from_name?name=' + name;
+function get_article_for_name() {
+  var name = $('#news').val();
+  console.log(name);
+  //var requestUrl = 'https://plutus-backend.herokuapp.com/get_article_from_name?name=' + name;
+  var requestUrl = 'http://localhost:5000/get_article_from_name?name=' + name;
   var responseTxt = httpGet(requestUrl);
   var responseJson = JSON.parse(responseTxt);
   var summaryTxt = responseJson['summary'];

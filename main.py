@@ -1,13 +1,14 @@
 from flask import Flask, jsonify, render_template, request, make_response
 
-from static import stock
-from static.articles import *
-#from .static import stock
-#from .static.articles import *
+#from static import stock
+#from static.articles import *
+from .static import stock
+from .static.articles import *
 
 app = Flask(__name__)
 article_source_manager = RelevantArticlesSource(2)
 
+"""
 user = stock.User('name', 'email')
 user.buy_stock('TSLA', '2017-02-10', 10)
 user.buy_stock('MSFT', '2017-02-10', 10)
@@ -19,7 +20,7 @@ stock.stocks = {
     'TSLA': stock.Stock('TSLA', 'tech'),
     'XON': stock.Stock('XON', 'energy')
 }
-
+"""
 @app.route('/get_history', methods=['GET', 'POST'])
 def get_history():
 
