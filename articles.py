@@ -3,8 +3,8 @@ Handles Stock articles pipeline.
 """
 import webhoseio
 import json
-import urllib.request
-from static.credentials import *
+import requests
+from .static.credentials import *
 
 
 class StockArticle:
@@ -52,9 +52,9 @@ class RelevantArticlesSource:
         stock_posts = query_result['posts']
         if len(stock_posts) == 0:
             return None
-        article_info = json.loads(stock_posts[0])
-        article_url = article_info['url']
-        article_summary = self.summarize_article(article_url)
+        article_url = stock_posts[0].get('url')
+        article_text = stock_posts[0].get('text')
+        article_summary = self.summarize_article(article_text)
 
         return StockArticle(stock_name, article_url, article_summary)
 
@@ -65,17 +65,36 @@ class RelevantArticlesSource:
         """
         self.db[stock_article.stock_name] = stock_article
 
-    def summarize_article(self, article_url):
+    def summarize_article(self, article_text):
         """
         Summarizes an article using the SMMRY API.
-        :param article_url: URL pointing to the article to summarize.
+        :param article_text: text of article to summarize.
         :return:            text of the summarized article.
         """
-        query_url = 'http://api.smmry.com/'
-        get_params = {'SM_API_KEY': smmry_api_key, 'SM_URL': article_url, 'SM_LENGTH': self.num_sentences}
-        query_url += RelevantArticlesSource.construct_get_query(get_params)
-        content_json = urllib.request.urlopen(query_url).read().decode('utf-8')
-        contents = json.loads(content_json)
+
+        url = "http://api.smmry.com/"
+
+        querystring = {"SM_API_KEY":"B6AA6865EE","SM_LENGTH":"2"}
+
+        payload = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"sm_api_input\"\r\n\r\n{}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--".format(article_text)
+        #payload = payload.encode('utf-8', 'ignore').decode('utf-8', 'ignore')
+
+        payload = str.encode(payload, 'utf-8', 'ignore')
+
+        headers = {
+            'content-type': "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+            'sm_api_key': "B6AA6865EE",
+            'sm_length': "2",
+            'cache-control': "no-cache",
+            'postman-token': "14691712-dada-24a5-06df-15e2bdfb2df6"
+        }
+
+        response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
+
+        print(response.text)
+
+        return response.text
+
         return contents['sm_api_content']
 
     @staticmethod
