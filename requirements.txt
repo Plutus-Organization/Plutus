@@ -1,0 +1,7 @@
+flask
+matplotlib
+numpy
+quandl
+requests
+static
+webhoseio
