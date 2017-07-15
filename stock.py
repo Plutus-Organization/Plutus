@@ -9,6 +9,7 @@ import re
 quandl.ApiConfig.api_key = '2gUCuKixgquQbAYWb-uz'
 alpha_vantage_key = 'BWH9ST7QEJE1LRQ7'
 alpha_vantage_url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={}&interval={}min&outputsize=compact&apikey={}'
+yahoo_url = 'http://autoc.finance.yahoo.com/autoc?query={}&region=US&lang=en&callback=YAHOO.Finance.SymbolSuggest.ssCallback'
 
 
 def get_data(ticker, dataset='WIKI', start_date='', end_date=''):
@@ -44,20 +45,96 @@ def get_intraday(ticker, interval=5):
     text = json.loads(req.text)['Time Series ({}min)'.format(interval)]
     times = []
     prices = []
-    
+
     now = datetime(2017, 7, 15)  # TFW your date is hardcoded
     for time, costs in sorted(text.items()):
         current = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
         if now - current > timedelta(days=1):
             continue
         times.append(current)
-        prices.append(costs['1. open'])
+        prices.append(float(costs['1. open']))
     return times, prices
 
 
+def get_price_at_start_and_end_of_day(ticker):
+    _, prices = get_intraday(ticker, 15)
+    return float(prices[0]), float(prices[-1])
+
+
 def get_price_change(ticker):
-    _, prices = get_intraday('AAPL', 15)
-    return (float(prices[-1]) - float(prices[0])) / float(prices[0])
+    start, end = get_price_at_start_and_end_of_day(ticker)
+    return (end - start) / start
 
 
+def get_name_from_ticker(ticker):
+    req = requests.get(yahoo_url.format(ticker))
+    for dic in json.loads(req.text[39:-2])['ResultSet']['Result']:
+        if dic['symbol'] == ticker.upper():
+            return(dic['name'])
 
+stocks = {}
+
+
+class User:
+
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+        self.user_stocks = {}  # Maps str ticker to UserStock purchased by user
+
+    def buy_stock(self, ticker, purchase_date, purchase_quantity):
+        ticker = ticker.upper()
+        self.user_stocks[ticker] = UserStock(ticker, purchase_date, purchase_quantity)
+
+class UserStock:
+
+    def __init__(self, ticker, purchase_date, purchase_quantity):
+        self.ticker = ticker
+        self.purchase_date = datetime.strptime(purchase_date, '%Y-%m-%d')
+        self.purchase_price = get_data(ticker, start_date=purchase_date)[1][0]
+        self.name = get_name_from_ticker(ticker)
+
+        if ticker in stocks:
+            self.stock = stocks[ticker]
+        else:
+            stock = Stock(ticker)
+            stocks[ticker] = stock
+            self.stock = stock
+
+        self._calc_max_and_min_prices()
+        self.current_value = purchase_quantity * get_price_at_start_and_end_of_day(ticker)[1]
+
+    def _calc_max_and_min_prices(self):
+
+        timestamps, prices = self.stock.price_date['1Y']
+        index = 0
+        for i in range(len(timestamps)):
+            if timestamps[i] > self.purchase_date:
+                index = i
+                break
+        self.max_price = max(prices[index:])
+        self.min_price = min(prices[index:])
+
+
+class Stock:
+
+    def __init__(self, ticker, category=''):
+
+        self.ticker = ticker
+        self.name = get_name_from_ticker(ticker)
+
+        self.price_data = {
+            '1d': get_intraday(ticker),
+            '1w': get_history(ticker, 7),
+            '1M': get_history(ticker, 30),
+            '3M': get_history(ticker, 90),
+            '6M': get_history(ticker, 183),
+            '1Y': get_history(ticker, 365),
+        }
+
+        self.category = category
+
+        self.description = ''
+
+    def set_description(self, des):
+        self.description = des
