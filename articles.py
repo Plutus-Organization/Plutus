@@ -30,6 +30,7 @@ class RelevantArticlesSource:
         Initializes the Source class.
         :param num_sentences: number of sentences returned by the SMMRY api.
         """
+        self.db = {}
         self.num_sentences = num_sentences
 
     def retrieve_topmost_article(self, stock_symbol, stock_name):
@@ -39,8 +40,8 @@ class RelevantArticlesSource:
         :param stock_name:   stock name.
         :return:             a StockArticle object.
         """
-        # Check if the article is already in db. If so return article.
-        # Else, use api
+        if stock_symbol in self.db:
+            return self.db[stock_symbol]
         return self.retrieve_topmost_article_new(stock_symbol, stock_name)
 
     def retrieve_topmost_article_new(self, stock_symbol, stock_name):
@@ -53,8 +54,7 @@ class RelevantArticlesSource:
         """
         webhoseio.config(token=webhose_api_key)
         stock_name = stock_name.lower()
-        filters = {'language': 'english', 'text': stock_name, 'site_type': 'news',
-                   'site_category': 'finance', 'thread.title': stock_name}
+        filters = {'language': 'english', 'text': stock_name, 'site_type': 'news', 'site_category': 'finance', 'thread.title': stock_name}
         query_result = webhoseio.query('filterWebContent', filters)
         stock_posts = query_result['posts']
         if len(stock_posts) == 0:
@@ -64,6 +64,13 @@ class RelevantArticlesSource:
         article_summary = self.summarize_article(article_url)
 
         return StockArticle(stock_symbol, article_url, article_summary)
+
+    def add_article_to_db(self, stock_article):
+        """
+        Adds a stock article into the database.
+        :param stock_article: stock article to be added.
+        """
+        self.db[stock_article.stock_symbol] = stock_article
 
     def summarize_article(self, article_url):
         """
