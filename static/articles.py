@@ -4,7 +4,7 @@ Handles Stock articles pipeline.
 import webhoseio
 import json
 import requests
-from .static.credentials import *
+from static.credentials import *
 
 
 class StockArticle:

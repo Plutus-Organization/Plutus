@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 
-#from static import stock
-from .articles import *
+from static import stock
+from static.articles import *
 
 app = Flask(__name__)
 article_source_manager = RelevantArticlesSource(2)
