@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 
-from Plutus.static import stock
+from static import stock
 
 app = Flask(__name__)
 
