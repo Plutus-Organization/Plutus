@@ -31,22 +31,24 @@ class RelevantArticlesSource:
         self.db = {}
         self.num_sentences = num_sentences
 
-    def retrieve_topmost_article(self, stock_name):
+    def retrieve_topmost_article(self, stock_name, num_sentences):
         """
         Retrieves the topmost article about the stock.
-        :param stock_name:   stock name.
-        :return:             a StockArticle object.
+        :param stock_name:    stock name.
+        :param num_sentences: number of sentences to return for summary.
+        :return:              a StockArticle object.
         """
         if stock_name in self.db:
             return self.db[stock_name]
-        return self.retrieve_topmost_article_new(stock_name)
+        return self.retrieve_topmost_article_new(stock_name, num_sentences)
 
-    def retrieve_topmost_article_new(self, stock_name):
+    def retrieve_topmost_article_new(self, stock_name, num_sentences):
         """
         Retrieves the topmost article about the stock, but solely through the usage of the webhose API. This
         does not involve checking the database for an already existing article for the stock.
-        :param stock_name:   stock name.
-        :return:             a StockArticle object.
+        :param stock_name:    stock name.
+        :param num_sentences: number of sentences to return for summary.
+        :return:              a StockArticle object.
         """
         webhoseio.config(token=webhose_api_key)
         filters = {'language': 'english', 'text': stock_name, 'site_type': 'news', 'site_category': 'finance', 'thread.title': stock_name}
@@ -56,7 +58,7 @@ class RelevantArticlesSource:
             return None
         article_url = stock_posts[0].get('url')
         article_text = stock_posts[0].get('text')
-        article_summary = self.summarize_article(article_text)
+        article_summary = self.summarize_article(article_text, num_sentences)
 
         return StockArticle(stock_name, article_url, article_summary)
 
@@ -67,16 +69,17 @@ class RelevantArticlesSource:
         """
         self.db[stock_article.stock_name] = stock_article
 
-    def summarize_article(self, article_text):
+    def summarize_article(self, article_text, num_sentences):
         """
         Summarizes an article using the SMMRY API.
-        :param article_text: text of article to summarize.
-        :return:            text of the summarized article.
+        :param article_text:  text of article to summarize.
+        :param num_sentences: number of sentences for the summary.
+        :return:              text of the summarized article.
         """
 
         url = "http://api.smmry.com/"
 
-        querystring = {"SM_API_KEY":"B6AA6865EE","SM_LENGTH":"2"}
+        querystring = {"SM_API_KEY":"B6AA6865EE","SM_LENGTH":num_sentences}
 
         payload = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"sm_api_input\"\r\n\r\n{}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--".format(article_text)
         #payload = payload.encode('utf-8', 'ignore').decode('utf-8', 'ignore')
@@ -86,7 +89,7 @@ class RelevantArticlesSource:
         headers = {
             'content-type': "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
             'sm_api_key': "B6AA6865EE",
-            'sm_length': "2",
+            'sm_length': num_sentences,
             'cache-control': "no-cache",
             'postman-token': "14691712-dada-24a5-06df-15e2bdfb2df6"
         }
@@ -96,8 +99,6 @@ class RelevantArticlesSource:
         print(response.text)
 
         return response.text
-
-        return contents['sm_api_content']
 
     @staticmethod
     def construct_get_query(get_params):

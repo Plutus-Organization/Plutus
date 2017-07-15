@@ -36,7 +36,8 @@ def get_history():
 @app.route('/get_article_from_name', methods=['GET', 'POST'])
 def get_article_for_stock_name():
     stock_name = request.args.get('name')
-    article = article_source_manager.retrieve_topmost_article(stock_name.lower())
+    num_sentences = request.args.get('num_sentences')
+    article = article_source_manager.retrieve_topmost_article(stock_name.lower(), num_sentences)
     article_source_manager.add_article_to_db(article)
     return jsonify(url=article.article_url, summary=article.article_summary)
 
