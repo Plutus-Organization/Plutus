@@ -7,7 +7,7 @@ from static import stock
 app = Flask(__name__)
 
 
-@app.route('/get_history', methods=['POST'])
+@app.route('/get_history', methods=['GET', 'POST'])
 def get_history():
 
     ticker = request.args.get('ticker')
