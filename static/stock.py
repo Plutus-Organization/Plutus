@@ -20,7 +20,7 @@ def get_data(ticker, dataset='WIKI', start_date='', end_date=''):
         for time in df.index:
             timestamps.append(time.to_pydatetime() + timedelta(hours=9.5))
             timestamps.append(time.to_pydatetime() + timedelta(hours=16))
-        prices = df[['Open', 'Close']].as_matrix().flatten()
+        prices = list(df[['Open', 'Close']].as_matrix().flatten())
         return timestamps, prices
     except Exception as e:
         return None
@@ -90,6 +90,7 @@ class UserStock:
     def __init__(self, ticker, purchase_date, purchase_quantity):
         self.ticker = ticker
         self.purchase_date = datetime.strptime(purchase_date, '%Y-%m-%d')
+        self.purchase_quantity = purchase_quantity
         self.purchase_price = get_data(ticker, start_date=purchase_date)[1][0]
         self.name = get_name_from_ticker(ticker)
 
@@ -105,7 +106,7 @@ class UserStock:
 
     def _calc_max_and_min_prices(self):
 
-        timestamps, prices = self.stock.price_date['1Y']
+        timestamps, prices = self.stock.price_data['1Y']
         index = 0
         for i in range(len(timestamps)):
             if timestamps[i] > self.purchase_date:
