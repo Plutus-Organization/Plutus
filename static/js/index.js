@@ -1,7 +1,7 @@
-const heroku_app_url = 'plutus-backend.herokuapp.com/';
+
 
 function get_article_for_name(name) {
-  var requestUrl = heroku_app_url + 'get_article_from_name?name=' + name;
+  var requestUrl = 'https://plutus-backend.herokuapp.com/get_article_from_name?name=' + name;
   var responseTxt = httpGet(requestUrl);
   var responseJson = JSON.parse(responseTxt);
   var summaryTxt = responseJson['summary'];
