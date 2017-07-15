@@ -38,7 +38,7 @@ class RelevantArticlesSource:
         :param num_sentences: number of sentences to return for summary.
         :return:              a StockArticle object.
         """
-        if stock_name in self.db:
+        if (stock_name, num_sentences) in self.db:
             return self.db[stock_name]
         return self.retrieve_topmost_article_new(stock_name, num_sentences)
 
@@ -62,12 +62,14 @@ class RelevantArticlesSource:
 
         return StockArticle(stock_name, article_url, article_summary)
 
-    def add_article_to_db(self, stock_article):
+    def add_article_to_db(self, stock_article, num_sentences):
         """
         Adds a stock article into the database.
         :param stock_article: stock article to be added.
+        :param num_sentences: number of sentences of summary.
         """
-        self.db[stock_article.stock_name] = stock_article
+        key_tup = (stock_article.stock_name, num_sentences)
+        self.db[key_tup] = stock_article
 
     def summarize_article(self, article_text, num_sentences):
         """
